@@ -22,8 +22,11 @@ namespace AnData.Class {
 
 
 		#region 属性
+		public string Mark { get; set; }
 
-
+		public int MarkCount { get {
+				return GetRunText(Mark).Count;
+			} }
 		#endregion
 
 
@@ -71,9 +74,12 @@ namespace AnData.Class {
 			if (list == null)
 				return null;
 
+			if (mark == ""||mark==null)
+				return tmp;
+
 			foreach(var run in list) {
 				string text = run.ToString( );
-				Debug.WriteLine("获取到的Run文本：" + run.ToString( ) + " 是否包含Mark：" + (text.Contains(mark)));
+				Program.PutMessage("获取到的Run文本：" + run.ToString( ) + " 是否包含Mark：" + (text.Contains(mark)));
 				if (text.Contains(mark)) 
 					tmp.Add(run);
 			}
@@ -94,8 +100,7 @@ namespace AnData.Class {
 			int count = 0;//替换的数量
 
 			List<XWPFRun> tmpArr = GetRunText(mark);//获取标记元素数组 
-			Debug.WriteLine("找到的标记数量：" + tmpArr.Count);
-
+			Program.PutMessage("找到的标记数量：" + tmpArr.Count);
 			if (tmpArr == null)
 				return 0;
 
@@ -171,12 +176,11 @@ namespace AnData.Class {
 						var run = runs[i];
 						text = run.ToString( );
 						list.Add(run);
-						Debug.Write(text + ",");
 					}
-					Debug.WriteLine("");
 				}
 			} catch(Exception ex) {
 				Debug.WriteLine(ex.ToString( ));
+				Program.PutMessage(ex.ToString( ));
 				fs = null;
 				return false;
 			}
@@ -208,7 +212,7 @@ namespace AnData.Class {
 
 			try {
 				MemoryStream ms = new MemoryStream( );//内存Steam
-				fs = new FileStream(path, FileMode.Create, FileAccess.Write);//FileSteam写入模式
+				fs = new FileStream(path, FileMode.CreateNew, FileAccess.Write);//FileSteam写入模式
 				document.Write(ms);//写入内存流
 				ms.Flush( );//刷新缓冲
 				byte[] data = ms.ToArray( );//将流转为字节码
@@ -218,6 +222,7 @@ namespace AnData.Class {
 			}catch(Exception ex) {
 				fs = null;
 				Debug.WriteLine(ex.ToString( ));
+				Program.PutMessage(ex.ToString());
 				return false;
 			}
 			return true;

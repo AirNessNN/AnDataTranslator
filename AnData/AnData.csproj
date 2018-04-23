@@ -13,7 +13,7 @@
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,13 +23,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\icon64.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+    <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -71,12 +78,61 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Class\DatabaseFile.cs" />
     <Compile Include="Class\DataFile.cs" />
     <Compile Include="Class\ExcelFile.cs" />
     <Compile Include="Class\ExcelToWordTask.cs" />
     <Compile Include="Class\QueueData.cs" />
     <Compile Include="Class\Util.cs" />
     <Compile Include="Class\WordFile.cs" />
+    <Compile Include="Component\AboutWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Component\AboutWindow.Designer.cs">
+      <DependentUpon>AboutWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Component\DbfWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Component\DbfWindow.Designer.cs">
+      <DependentUpon>DbfWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Component\GuideWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Component\GuideWindow.Designer.cs">
+      <DependentUpon>GuideWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Component\HelpWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Component\HelpWindow.Designer.cs">
+      <DependentUpon>HelpWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Component\MessageDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Component\MessageDialog.Designer.cs">
+      <DependentUpon>MessageDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Component\StartWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Component\StartWindow.Designer.cs">
+      <DependentUpon>StartWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Component\TaskDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Component\TaskDialog.Designer.cs">
+      <DependentUpon>TaskDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Component\TaskWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Component\TaskWindow.Designer.cs">
+      <DependentUpon>TaskWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="Component\TestWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -85,18 +141,42 @@
     </Compile>
     <Compile Include="Interface\ITask.cs" />
     <Compile Include="Interface\ITaskListener.cs" />
-    <Compile Include="ExcelWindow.cs">
+    <Compile Include="Component\ExcelWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ExcelWindow.Designer.cs">
+    <Compile Include="Component\ExcelWindow.Designer.cs">
       <DependentUpon>ExcelWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Component\AboutWindow.resx">
+      <DependentUpon>AboutWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Component\DbfWindow.resx">
+      <DependentUpon>DbfWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Component\GuideWindow.resx">
+      <DependentUpon>GuideWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Component\HelpWindow.resx">
+      <DependentUpon>HelpWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Component\MessageDialog.resx">
+      <DependentUpon>MessageDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Component\StartWindow.resx">
+      <DependentUpon>StartWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Component\TaskDialog.resx">
+      <DependentUpon>TaskDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Component\TaskWindow.resx">
+      <DependentUpon>TaskWindow.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Component\TestWindow.resx">
       <DependentUpon>TestWindow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ExcelWindow.resx">
+    <EmbeddedResource Include="Component\ExcelWindow.resx">
       <DependentUpon>ExcelWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -107,6 +187,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -121,6 +202,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="dll\Spire.Doc.dll" />
+    <None Include="Resources\SeveLogo.png" />
+    <None Include="Resources\icon.png" />
+    <Content Include="Resources\0.png" />
+    <Content Include="Resources\1.png" />
+    <Content Include="Resources\2.png" />
+    <Content Include="Resources\icon32.ico" />
+    <Content Include="Resources\icon64.ico" />
+    <None Include="Resources\picbg.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

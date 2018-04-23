@@ -53,6 +53,10 @@ namespace AnData {
 		/// </summary>
 		public bool IsCreateModel { get; private set; }
 
+		/// <summary>
+		///获取或设置剔除空行标记
+		/// </summary>
+		public bool SkipNullRow { get; set; }
 		#endregion
 
 
@@ -84,9 +88,11 @@ namespace AnData {
 			workbook.CreateSheet("Sheet3");
 
 			//写入
-			WriteFile(filePath);
-
+			bool b=WriteFile(filePath);
+			if (!b)
+				return false;
 			//完成
+			FilePath = filePath;
 			IsLoaded = true;
 			return true;
 		}
@@ -152,20 +158,58 @@ namespace AnData {
 			ICellStyle style = workbook.CreateCellStyle( );
 			style.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Center;//设置居中
 			IFont font = workbook.CreateFont( );
-			font.FontHeight = 20 * 20;
+			font.FontHeight = 36;
+			font.FontName = "微软雅黑";
 			style.SetFont(font);
 			cell.CellStyle = style;
 			//合并单元格
 			sheet.AddMergedRegion(new CellRangeAddress(0, 0, 0, columnSize - 1));
 
-			//填充数据
-			string[] heads = new string[dt.Columns.Count];
-			for(int i = 0; i < heads.Length; i++) {
-				heads[i] = dt.Columns[i].ToString( );
-
+			//填充表头
+			ICellStyle headStyle = workbook.CreateCellStyle( );
+			headStyle.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Left;
+			IFont headFont = workbook.CreateFont( );
+			headFont.FontHeight = 13;
+			headFont.Boldweight = (short)FontBoldWeight.Bold;
+			headFont.FontName = "微软雅黑";
+			headStyle.SetFont(headFont);
+			IRow headRow = sheet.CreateRow(1);
+			for(int i = 0; i < dt.Columns.Count; i++) {
+				ICell headCell = headRow.CreateCell(i);
+				headCell.CellStyle = headStyle;
+				headCell.SetCellValue(dt.Columns[i].ToString( ));
 			}
 
-			return true;
+			//填充数据
+			ICellStyle dataStyle = workbook.CreateCellStyle( );
+			dataStyle.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Left;
+			IFont dataFont = workbook.CreateFont( );
+			dataFont.FontHeight = 11;
+			dataFont.FontName = "微软雅黑";
+			dataFont.Boldweight = (short)FontBoldWeight.Normal;
+			dataStyle.SetFont(dataFont);
+			for(int i = 0; i < dt.Rows.Count; i++) {
+				IRow dataRow = sheet.CreateRow(i+2);
+				for(int j = 0; j < dt.Columns.Count; j++) {
+					ICell tmp_cell = dataRow.CreateCell( j);
+					tmp_cell.CellStyle = dataStyle;
+					Type t = dt.Columns[j].DataType;
+					string type = t.ToString( );
+					if (type.Contains("Int")|| type.Contains("Double")|| type.Contains("Long") || type.Contains("Shot") || type.Contains("Float")) {
+						Double d = Convert.ToDouble(dt.Rows[i][j]);
+						if (d > 99999999999) {
+							tmp_cell.SetCellType(CellType.String);
+						}else {
+							tmp_cell.SetCellType(CellType.Numeric);
+						}
+					}else {
+						tmp_cell.SetCellType(CellType.String);
+					}
+					tmp_cell.SetCellValue( dt.Rows[i][j].ToString());
+				}
+			}
+			//保存文件
+			return WriteFile( );
 		}
 
 		/// <summary>
@@ -248,6 +292,8 @@ namespace AnData {
 						continue;
 
 					DataRow dataRow = dt.NewRow( );//创建新行
+
+					bool nullRowFlag = true;//空行标记
 					
 					//循环单行内的元素：从此行的开始元素开始录入，到表头的尾元素结束
 					for (int j = columnIndex ; j < cellCount; j++) {
@@ -255,18 +301,34 @@ namespace AnData {
 							//判断格式为函数
 							var cell = row.GetCell(j);
 
+							//空行判断
+							if (cell.ToString( ) != "")
+								nullRowFlag = false;
+
 							if (cell.CellType == CellType.Formula) {
-								var formulaValue = evalor.Evaluate(cell);
-								if (formulaValue.CellType == CellType.Numeric)
+								try {
+									var formulaValue = evalor.Evaluate(cell);
+									if (formulaValue.CellType == CellType.Numeric)
+										dataRow[j] = Convert.ToString(formulaValue.NumberValue);
+									if (formulaValue.CellType == CellType.Numeric)
+										dataRow[j] = formulaValue.StringValue;
 									dataRow[j] = Convert.ToString(formulaValue.NumberValue);
-								if (formulaValue.CellType == CellType.Numeric)
-									dataRow[j] = formulaValue.StringValue;
-								dataRow[j] = Convert.ToString(formulaValue.NumberValue);
+								} catch {
+									try {
+										//j-columnIndex录入的是dataRow，下标不可能超过个数，所以要减去columnIndex
+										dataRow[j - columnIndex] = cell.ToString( );
+									} catch (Exception ex) {
+										Debug.WriteLine("出错的下标：" + j);
+										string text = ex.Message + "请尝试从下一行开始。";
+										MessageBox.Show(text, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+										return dt;
+									}
+								}
 							} else {
 								//将数据添加到dataRow中
 								try {
 									//j-columnIndex录入的是dataRow，下标不可能超过个数，所以要减去columnIndex
-									dataRow[j-columnIndex] = cell.ToString( );
+									dataRow[j - columnIndex] = cell.ToString( );
 								} catch(Exception ex) {
 									Debug.WriteLine("出错的下标："+j);
 									string text = ex.Message + "请尝试从下一行开始。";
@@ -276,7 +338,13 @@ namespace AnData {
 							}
 						}
 					}
-					dt.Rows.Add(dataRow);//添加到DataTable
+					//判断添加
+					if (SkipNullRow) {
+						if (!nullRowFlag)
+							dt.Rows.Add(dataRow);//添加到DataTable
+					}
+					else
+							dt.Rows.Add(dataRow);//添加到DataTable
 				}
 			}
 			return dt;
@@ -338,6 +406,10 @@ namespace AnData {
 
 			if (Loaded) {
 				this.CloseFile( );
+				fs = null;
+				workbook = null;
+				isXlsx = false;
+				IsCreateModel = false;
 			}
 
 
@@ -355,10 +427,9 @@ namespace AnData {
 			}else if (path.IndexOf(".xls") > 0)
 				workbook = new HSSFWorkbook(fs);
 
-			if (workbook == null) {
-
+			if (workbook == null)
 				return false;
-			}
+			
 
 			//确认加载完成
 			CloseFile( );
@@ -371,7 +442,8 @@ namespace AnData {
 				FileStream fs = new FileStream(FilePath, FileMode.Create);
 				workbook.Write(fs);
 				fs.Close( );
-			} catch {
+			} catch(Exception ex) {
+				Debug.WriteLine(ex.Message);
 				return false;
 			}
 			return true;
